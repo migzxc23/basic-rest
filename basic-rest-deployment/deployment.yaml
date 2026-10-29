@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-rest
+  labels:
+    app: basic-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-rest
+  template:
+    metadata:
+      labels:
+        app: basic-rest
+    spec:
+      serviceAccountName: basic-rest-sa
+      containers:
+        - name: basic-rest
+          image: <ACCOUNT_ID>.dkr.ecr.ap-southeast-1.amazonaws.com/basic-rest:0.0.1   # local: basic-rest:0.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: basic-rest-config
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-rest
+  labels:
+    app: basic-rest
+spec:
+  selector:
+    app: basic-rest
+  ports:
+    - port: 80
+      targetPort: 8080

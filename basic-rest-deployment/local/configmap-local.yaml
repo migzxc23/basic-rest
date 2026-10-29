@@ -1,0 +1,17 @@
+# LOCAL ONLY (Docker Desktop / kind + Floci). Apply instead of ../configmap.yaml:
+#   kubectl apply -f basic-rest-deployment/local/configmap-local.yaml
+# IRSA does not exist locally, so the pod gets dummy keys and the Floci endpoint.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basic-rest-config
+  labels:
+    app: basic-rest
+data:
+  DATABASE_URL: "jdbc:postgresql://host.docker.internal:7001/basicrest"
+  DATABASE_USERNAME: "admin"
+  AWS_SECRET_ID: "dev/local/local/default/basic-rest"
+  AWS_REGION: "us-east-1"
+  AWS_ENDPOINT_URL: "http://host.docker.internal:4566"
+  AWS_ACCESS_KEY_ID: "test"
+  AWS_SECRET_ACCESS_KEY: "test"

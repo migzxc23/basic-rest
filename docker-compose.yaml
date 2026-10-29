@@ -1,0 +1,40 @@
+# Floci (local AWS emulator) with RDS + EKS (real k3s) support.
+# Needs the Docker socket, the RDS proxy ports and a shared network so k3s pods can reach Floci.
+# Optional Rancher UI:  docker compose --profile rancher up -d rancher   (see scripts/rancher-import.ps1)
+services:
+  floci:
+    image: floci/floci:latest
+    container_name: floci
+    ports:
+      - "4566:4566"
+      - "7001-7099:7001-7099"   # RDS proxy ports
+      # EKS API servers bind 6500-6599 directly on the host; no mapping needed
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      FLOCI_SERVICES_DOCKER_NETWORK: floci-net
+      FLOCI_SERVICES_EKS_DOCKER_NETWORK: floci-net
+    networks:
+      - floci-net
+
+  rancher:
+    image: rancher/rancher:latest
+    container_name: rancher
+    profiles: ["rancher"]          # not started by a plain `docker compose up`
+    privileged: true               # Rancher runs an embedded k3s
+    restart: unless-stopped
+    ports:
+      - "8443:443"                 # UI: https://localhost:8443  (self-signed certificate)
+    environment:
+      CATTLE_BOOTSTRAP_PASSWORD: "FlociRancher-2026!"
+    volumes:
+      - rancher-data:/var/lib/rancher
+    networks:
+      - floci-net
+
+volumes:
+  rancher-data:
+
+networks:
+  floci-net:
+    name: floci-net

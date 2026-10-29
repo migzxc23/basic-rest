@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basic-rest-config
+  namespace: basic-rest
+data:
+  # No DATABASE_PASSWORD and no AWS keys. Pods reach Floci by its container name on the floci-net network.
+  DATABASE_URL: "jdbc:postgresql://floci:7001/basicrest"
+  DATABASE_USERNAME: "admin"
+  AWS_SECRET_ID: "dev/local/local/default/basic-rest"
+  AWS_REGION: "us-east-1"
+  # Routes Secrets Manager AND STS (IRSA) calls to Floci. Not needed on real EKS.
+  AWS_ENDPOINT_URL: "http://floci:4566"

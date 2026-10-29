@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: basic-rest-config
+  labels:
+    app: basic-rest
+data:
+  # EKS. Non-secret settings only. DATABASE_PASSWORD is intentionally absent: application.yaml holds the
+  # placeholder ${DATABASE_PASSWORD} and secret-manager loads it from AWS Secrets Manager at startup.
+  # Replace the <...> values with those returned by Cloud Operations.
+  DATABASE_URL: "jdbc:postgresql://<RDS_ENDPOINT>:5432/basicrest"
+  DATABASE_USERNAME: "<DB_USERNAME>"
+  # <opco>/<env>/<cluster-name>/<namespace>/<service-name>
+  AWS_SECRET_ID: "<opco>/<env>/<cluster-name>/<namespace>/basic-rest"
+  AWS_REGION: "ap-southeast-1"
+  # No AWS keys and no endpoint override: IRSA (ServiceAccount annotation) supplies credentials.

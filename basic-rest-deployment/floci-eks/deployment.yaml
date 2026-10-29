@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-rest
+  namespace: basic-rest
+  labels:
+    app: basic-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-rest
+  template:
+    metadata:
+      labels:
+        app: basic-rest
+    spec:
+      serviceAccountName: basic-rest
+      containers:
+        - name: basic-rest
+          image: 000000000000.dkr.ecr.us-east-1.localhost:4566/basic-rest:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: basic-rest-config
+          env:
+            # Real EKS injects these via its pod-identity webhook; k3s has none, so they are explicit here.
+            - name: AWS_ROLE_ARN
+              value: arn:aws:iam::000000000000:role/basic-rest-secrets-role
+            - name: AWS_WEB_IDENTITY_TOKEN_FILE
+              value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+            - name: AWS_ROLE_SESSION_NAME
+              value: basic-rest
+          volumeMounts:
+            - name: aws-iam-token
+              mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+      volumes:
+        - name: aws-iam-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: sts.amazonaws.com
+                  expirationSeconds: 3600
+                  path: token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basic-rest
+  namespace: basic-rest
+spec:
+  selector:
+    app: basic-rest
+  ports:
+    - port: 80
+      targetPort: 8080

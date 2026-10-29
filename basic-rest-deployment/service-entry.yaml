@@ -1,0 +1,21 @@
+# Istio ServiceEntry: allows basic-rest pods to call AWS STS (needed by IRSA to exchange the
+# ServiceAccount token for AWS credentials). EKS only - do NOT apply to the local Floci cluster (no Istio CRDs there).
+# Confirm with ISP L2 / platform: mesh is Istio, region, the namespace, and whether they apply it for you.
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: basic-rest-aws-sts
+  namespace: <NAMESPACE>
+  labels:
+    app: basic-rest
+spec:
+  hosts:
+    - sts.ap-southeast-1.amazonaws.com
+    # - sts.amazonaws.com                            # only if the SDK falls back to the global STS endpoint
+    # - secretsmanager.ap-southeast-1.amazonaws.com  # only if Secrets Manager egress is not already allowed
+  location: MESH_EXTERNAL
+  resolution: DNS
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS

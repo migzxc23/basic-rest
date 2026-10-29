@@ -1,0 +1,11 @@
+# Local development without AWS: run with --spring.profiles.active=local
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:7001/basicrest
+    username: admin
+    password: secret123   # local Floci instance only
+
+secrets:
+  manager:
+    enabled: false
+

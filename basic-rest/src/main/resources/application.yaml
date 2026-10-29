@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: basic-rest
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    # Placeholder only. The value is imported from AWS Secrets Manager at startup
+    # (see secrets.manager below) and is never stored in the ConfigMap or in Git.
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+secrets:
+  manager:
+    enabled: true
+    secret-id: ${AWS_SECRET_ID:}
+    region: ${AWS_REGION:}
+    endpoint: ${AWS_ENDPOINT_URL:}
+    fail-fast: true
+    allowed-keys: DATABASE_PASSWORD
+
+management:
+  endpoint:
+    env:
+      show-values: never
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
