@@ -18,7 +18,7 @@ services:
       - floci-net
 
   rancher:
-    image: rancher/rancher:latest
+    image: rancher/rancher:v2.11.3   # pinned: newer Rancher (2.15) only supports downstream k8s >=1.34, Floci EKS runs 1.31
     container_name: rancher
     profiles: ["rancher"]          # not started by a plain `docker compose up`
     privileged: true               # Rancher runs an embedded k3s
